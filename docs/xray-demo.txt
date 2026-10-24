@@ -1,0 +1,12 @@
+persianprobe xray · 26 characters · 46 UTF-8 bytes
+contains: 7 persian-arabic-letter, 6 space, 3 arabic-indic-digit, 3 ascii-digit, 1 arabic-yeh, 1 arabic-kaf, 1 zwnj, 1 persian-digit, 1 tatweel, 1 presentation-form, 1 rlm
+  [2] ي U+064A  Arabic yeh ي: looks like ی but is a different character → ی U+06CC
+  [5] ك U+0643  Arabic kaf ك: looks like ک but is a different character → ک U+06A9
+  [13] ٤ U+0664  Arabic-Indic digit ٤ (shaped differently from Persian ۴) → ۴ U+06F4
+  [14] ٥ U+0665  Arabic-Indic digit ٥ (shaped differently from Persian ۵) → ۵ U+06F5
+  [15] ٦ U+0666  Arabic-Indic digit ٦ (shaped differently from Persian ۶) → ۶ U+06F6
+  [22] ـ U+0640  Tatweel ـ (kashida): stretches a word, breaks matching → delete
+  [24] ﻻ U+FEFB  Arabic presentation form ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM: pasted from PDF/Word → لا U+0644
+  [25] · U+200F  RLM direction mark (invisible) → delete
+  ! mixed digit systems (persian-digit, arabic-indic-digit, ascii-digit): sorting, equality and parsing will treat them as different
+normalized: علی  کتاب‌ها ۴۵۶ ۱۲۳ ۷ لا

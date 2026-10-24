@@ -1,0 +1,114 @@
+persianprobe 0.1.0 · LC_ALL=C.UTF-8
+  python  Python 3.13.5
+  node    v20.19.2
+  bun     bun 1.4.2
+  perl    v5.40.1
+  sqlite  SQLite 3.46.1
+  jq      jq-1.7
+  go      go version go1.27.3 linux/amd64
+  awk     mawk 1.3.4 20250131
+
+probe               expected          python            node                 bun                  perl              sqlite            jq                go                awk       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+parse-int           123               123 ✓             NaN ✗                NaN ✗                0 ✗               0 ✗               error ✗           error ✗           0 ✗
+parse-int-sep       1234              error ✗           NaN ✗                NaN ✗                0 ✗               0 ✗               error ✗           error ✗           0 ✗
+parse-float-dot     1.5               1.5 ✓             NaN ✗                NaN ✗                0 ✗               0.0 ✗             error ✗           error ✗           0 ✗
+parse-float-fa-sep  1.5               error ✗           NaN ✗                NaN ✗                0 ✗               0.0 ✗             error ✗           error ✗           0 ✗
+digit-regex         true              true ✓            false ✗              false ✗              true ✓            false ✗           true ✓            false ✗           false ✗
+word-regex          true              true ✓            false ✗              false ✗              true ✓            -                 true ✓            false ✗           -
+length              7                 7 ✓               7 ✓                  7 ✓                  7 ✓               7 ✓               7 ✓               15 ✗              15 ✗
+equal-ye            true              false ✗           false ✗              false ✗              false ✗           false ✗           false ✗           false ✗           false ✗
+sort-default        alef be pe te     alef be te pe ✗   alef be te pe ✗      alef be te pe ✗      alef be te pe ✗   alef be te pe ✗   alef be te pe ✗   alef be te pe ✗   -
+sort-fa-locale      alef be pe te     -                 alef be pe te ✓      alef be pe te ✓      alef be pe te ✓   -                 -                 -                 -
+json-encode         raw UTF-8         \u escapes ✗      raw UTF-8 ✓          raw UTF-8 ✓          raw UTF-8 ✓       raw UTF-8 ✓       raw UTF-8 ✓       raw UTF-8 ✓       -
+nfkc                U+0644 U+0627     U+0644 U+0627 ✓   U+0644 U+0627 ✓      U+0644 U+0627 ✓      U+0644 U+0627 ✓   -                 -                 -                 -
+jalali-format       1405/8/2 (fa)     -                 1405/8/2 (fa) ✓      1405/8/2 (fa) ✓      -                 -                 -                 -                 -
+number-format-fa    1,234,567.5 (fa)  -                 1,234,567.5 (fa) ✓   1,234,567.5 (fa) ✓   -                 -                 -                 -                 -
+
+✓ matches what a Persian-speaking user expects · ✗ does not · - not available in that runtime
+
+14 probes · 6 portability traps (runtimes disagree) · 4 that no runtime gets right · 4 fine where available
+
+PORTABILITY TRAPS: the same code gives different answers [6]
+
+✗ parse-int · parse the integer ۱۲۳ (Persian digits)
+    right:  python
+    wrong:  node, bun, perl, sqlite, jq, go, awk
+    why:    Only Python's int() accepts non-ASCII digits. Everything else returns NaN/0/error, silently in JS, Perl, SQLite and awk.
+    fix:    [node] const toEn = s => s.replace(/[۰-۹]/g, d => d.charCodeAt(0) - 1776).replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632);
+            toEn("۱۲۳") // "123"
+            [bun] same as node: map ۰-۹ (U+06F0..) and ٠-٩ (U+0660..) to ASCII before parseInt
+            [perl] tr/۰-۹٠-٩/0-90-9/ on the string before numeric use
+            [sqlite] do it in the application: SQLite CAST stops at the first non-ASCII character and returns 0 without an error
+            [jq] explode | map(if . >= 1776 and . <= 1785 then . - 1728 else . end) | implode | tonumber
+            [go] strings.Map(func(r rune) rune { if r >= 0x06F0 && r <= 0x06F9 { return r - 0x06F0 + '0' }; return r }, s)
+            [awk] convert in the shell first, e.g. sed 'y/۰۱۲۳۴۵۶۷۸۹/0123456789/'
+
+✗ parse-float-dot · parse ۱.۵ (Persian digits, ASCII dot)
+    right:  python
+    wrong:  node, bun, perl, sqlite, jq, go, awk
+    why:    Python accepts it, JavaScript returns NaN, Perl/SQLite/awk return 0.
+    fix:    [all] map the digits to ASCII first
+
+✗ digit-regex · does the regex \d match the digit ۵?
+    right:  python, perl, jq
+    wrong:  node, bun, sqlite, go, awk
+    why:    Python, Perl and jq (Unicode-aware \d) say yes; JavaScript, Go, SQLite GLOB and awk say no. The same validation regex gives different answers per language.
+    fix:    [node, bun] /[\d۰-۹٠-٩]/ or /\p{Nd}/u
+            [sqlite] GLOB has no Unicode classes: validate in the application
+            [go] regexp.MustCompile(`\p{Nd}`)
+            [awk] awk cannot do this portably: normalise digits first
+
+✗ word-regex · does the regex \w match the letter ک?
+    right:  python, perl, jq
+    wrong:  node, bun, go
+    why:    JavaScript and Go define \w as [A-Za-z0-9_], so a Persian word is not a 'word'. Python, Perl and jq are Unicode-aware.
+    fix:    [node, bun] /[\p{L}\p{N}_]/u
+            [go] regexp.MustCompile(`[\p{L}\p{N}_]`)
+
+✗ length · length of نامه‌ها (6 letters + 1 ZWNJ = 7 characters)
+    right:  python, node, bun, perl, sqlite, jq
+    wrong:  go, awk
+    why:    Go's len() and awk (without multibyte support) count UTF-8 bytes: 15 instead of 7.
+    fix:    [go] utf8.RuneCountInString(s)
+            [awk] use gawk in a UTF-8 locale, or do the length check in another tool
+
+✗ json-encode · JSON-encode the string سلام
+    right:  node, bun, perl, sqlite, jq, go
+    wrong:  python
+    why:    Python's json.dumps escapes everything to \u0633\u0644...: valid JSON, but unreadable in logs, diffs and databases, and different bytes from every other runtime.
+    fix:    [python] json.dumps(obj, ensure_ascii=False)
+
+NO RUNTIME GETS IT RIGHT: you must handle it yourself [4]
+
+✗ parse-int-sep · parse ۱٬۲۳۴ (Persian thousands separator U+066C)
+    wrong:  python, node, bun, perl, sqlite, jq, go, awk
+    why:    Even Python fails once the separator ٬ (U+066C) is present, which is exactly what Intl/fa-IR formatting produces.
+    fix:    [all] strip ٬ (U+066C) and ، and replace ٫ (U+066B) with '.', then map the digits; do it before parsing
+
+✗ parse-float-fa-sep · parse ۱٫۵ (Persian decimal separator U+066B)
+    wrong:  python, node, bun, perl, sqlite, jq, go, awk
+    why:    No standard library understands ٫ (U+066B) as a decimal point.
+    fix:    [all] replace ٫ with '.' and ٬ with '' after mapping digits
+
+✗ equal-ye · is علی (Persian ی U+06CC) equal to علي (Arabic ي U+064A)?
+    wrong:  python, node, bun, perl, sqlite, jq, go, awk
+    why:    Every runtime says they differ. Search, login names and unique keys silently split in two unless you fold Arabic ي ى ك to ی ک at input.
+    fix:    [python] s.translate({0x064A: "ی", 0x0649: "ی", 0x0643: "ک"})
+            [node, bun] s.replace(/[يى]/g, "ی").replace(/ك/g, "ک")
+            [perl, jq, go, awk] fold ي (U+064A) and ى (U+0649) to ی (U+06CC), ك (U+0643) to ک (U+06A9) before storing and before comparing
+            [sqlite] REPLACE(REPLACE(REPLACE(x, 'ي', 'ی'), 'ى', 'ی'), 'ك', 'ک') in a generated column or trigger
+
+✗ sort-default · sort the letters ت پ ب ا with the default sort
+    wrong:  python, node, bun, perl, sqlite, jq, go
+    why:    Every default sort is by code point. پ چ ژ گ are encoded after the Arabic letters, so پ lands after ت instead of between ب and ت.
+    fix:    [python] PyICU Collator.createInstance(Locale('fa')), or a key function built from the Persian alphabet order
+            [node, bun] l.sort(new Intl.Collator("fa").compare)
+            [perl] Unicode::Collate::Locale->new(locale => "fa")->sort(@l)
+            [sqlite] load the ICU extension and use COLLATE, or sort in the application with a Persian collator
+            [jq] use a Persian collator (ICU 'fa'), never the default sort
+            [go] golang.org/x/text/collate with language.Persian
+
+CAPABILITY GAPS: fine where it exists, missing elsewhere
+
+· sort-fa-locale: not built in for python

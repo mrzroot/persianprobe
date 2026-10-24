@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "persianprobe"
+dynamic = ["version"]
+description = "Run the same Persian-text probes (digits, sorting, regex, length, ی/ي, JSON) through every runtime on your machine and see exactly where they disagree."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Mohammadreza Zare", email = "mrzroot@users.noreply.github.com" }]
+keywords = ["persian", "farsi", "unicode", "i18n", "rtl", "jalali", "developer-tools", "ai-agents", "vibe-coding", "normalization"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Natural Language :: Persian",
+  "Topic :: Software Development :: Internationalization",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://mrzroot.github.io/persianprobe/"
+Source = "https://github.com/mrzroot/persianprobe"
+Issues = "https://github.com/mrzroot/persianprobe/issues"
+
+[project.scripts]
+persianprobe = "persianprobe.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "persianprobe.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
