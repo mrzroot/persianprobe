@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from . import __version__
 from .matrix import Result
-from .probes import BY_ID, PROBES
+from .probes import PROBES
 
 MARK = {"ok": "✓", "miss": "✗", "na": "–"}
 RT_ORDER = ["python", "node", "bun", "perl", "sqlite", "jq", "go", "awk"]

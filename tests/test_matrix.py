@@ -5,7 +5,7 @@ import pytest
 
 from persianprobe import cli, matrix, render
 from persianprobe.adapters import Runtime
-from persianprobe.probes import PROBES, BY_ID
+from persianprobe.probes import PROBES
 
 
 def fake(key, lines):

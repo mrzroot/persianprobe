@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from .adapters import Runtime, runtimes
-from .probes import BY_ID, PROBES
+from .probes import PROBES
 
 
 @dataclass
