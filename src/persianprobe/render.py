@@ -57,8 +57,8 @@ def text(res: Result, raw: bool = False, color: bool = False, only_probes: Optio
     rest = [p for p in probes if res.verdict(p.id) == "ok"]
     out.append(f"{len(probes)} probes · {len(traps)} portability traps (runtimes disagree) · {len(allmiss)} that no runtime gets right · {len(rest)} fine where available")
     out.append("")
-    for title, group, tag in (("PORTABILITY TRAPS: the same code gives different answers", traps, "disagree"),
-                              ("NO RUNTIME GETS IT RIGHT: you must handle it yourself", allmiss, "all-miss")):
+    for title, group in (("PORTABILITY TRAPS: the same code gives different answers", traps),
+                              ("NO RUNTIME GETS IT RIGHT: you must handle it yourself", allmiss)):
         if not group:
             continue
         out.append(_c(f"{title} [{len(group)}]", "33", color))
