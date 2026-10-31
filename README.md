@@ -125,3 +125,11 @@ pip install -e ".[test]" && pytest     # 25 tests; tests for other runtimes are 
 ```
 
 MIT licensed · by [Mohammadreza Zare (mrzroot)](https://github.com/mrzroot) · landing page: https://mrzroot.github.io/persianprobe/
+
+## Contributing
+
+Bug reports and ideas are welcome: open an [issue](../../issues/new/choose) (the templates ask for the steps and version we need). For code, read [CONTRIBUTING.md](CONTRIBUTING.md) first, keep each pull request to one change, and run the tests before you open it.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
